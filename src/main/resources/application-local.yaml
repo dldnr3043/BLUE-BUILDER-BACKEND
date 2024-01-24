@@ -1,0 +1,16 @@
+##########################################################
+# DATASOURCE
+##########################################################
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/blue_builder
+    username: postgres
+    password: 1234
+  jpa:
+    hibernate:
+      dialet: org.hibernate.dialect.PostgreSQL10Dialect
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
