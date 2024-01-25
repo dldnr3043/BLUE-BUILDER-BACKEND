@@ -11,6 +11,5 @@ import org.springframework.stereotype.Repository;
  * count()
  * delete()
  */
-@Repository
 public interface UserRepository extends JpaRepository<User, String> {
 }

@@ -2,10 +2,7 @@ package blue.builder.me.user.domain;
 
 import blue.builder.me.common.domain.BaseTime;
 import blue.builder.me.user.util.UserRole;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -21,6 +18,7 @@ public class User extends BaseTime {
     @Column(name = "name")
     private String name;
     @Column(name = "role")
+    @Enumerated(EnumType.STRING)
     private final UserRole role = UserRole.ROLE_NON_AUTH;
 
     @Builder
