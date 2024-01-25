@@ -7,6 +7,7 @@ import blue.builder.me.user.dto.UserDTO;
 import blue.builder.me.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.JSONObject;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,9 +24,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public UserDTO signup(UserDTO userDTO) {
+    public JSONObject signup(UserDTO userDTO) {
+        JSONObject retObject = new JSONObject();
+
         if(userRepository.existsById(userDTO.getEmail())) {
-            throw new RuntimeException("이미 가입되어 있는 사용자입니다.");
+            retObject.put("ERROR_FLAG", true);
+            retObject.put("ERROR_MSG", "이미 가입되어 있는 사용자입니다.");
+            return retObject;
         }
         User user = User.builder()
                 .email(userDTO.getEmail())
@@ -35,10 +40,13 @@ public class AuthServiceImpl implements AuthService {
 
         User savedUser = userRepository.save(user);
 
-        return UserDTO.builder()
-                .email(savedUser.getEmail())
-                .password(savedUser.getPassword())
-                .name(savedUser.getName())
-                .build();
+        retObject.put("ERROR_FLAG", false);
+        retObject.put("ERROR_MSG", "");
+        retObject.put("DATA", UserDTO.builder()
+                                    .email(savedUser.getEmail())
+                                    .password(savedUser.getPassword())
+                                    .name(savedUser.getName())
+                                    .build());
+        return retObject;
     }
 }

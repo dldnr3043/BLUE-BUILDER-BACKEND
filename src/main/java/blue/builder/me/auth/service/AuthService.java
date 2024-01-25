@@ -1,7 +1,8 @@
 package blue.builder.me.auth.service;
 
 import blue.builder.me.user.dto.UserDTO;
+import org.json.simple.JSONObject;
 
 public interface AuthService {
-    public UserDTO signup(UserDTO userDTO);
+    public JSONObject signup(UserDTO userDTO);
 }

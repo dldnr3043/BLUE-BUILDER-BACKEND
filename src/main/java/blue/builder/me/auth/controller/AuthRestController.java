@@ -19,7 +19,9 @@ public class AuthRestController {
     private AuthService authService;
 
     @PostMapping("/api/signup")
-    public ResponseEntity<UserDTO> signup(@RequestBody UserDTO userDTO) {
-        return ResponseEntity.ok(authService.signup(userDTO));
+    public JSONObject signup(@RequestBody UserDTO userDTO) {
+        JSONObject retObject = authService.signup(userDTO);
+
+        return retObject;
     }
 }
