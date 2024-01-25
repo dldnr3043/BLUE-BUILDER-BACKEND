@@ -1,5 +1,8 @@
 package blue.builder.me.auth.controller;
 
+import blue.builder.me.auth.dto.LoginDTO;
+import blue.builder.me.auth.dto.SignupDTO;
+import blue.builder.me.auth.dto.TokenDTO;
 import blue.builder.me.auth.service.AuthService;
 import blue.builder.me.user.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +22,15 @@ public class AuthRestController {
     private AuthService authService;
 
     @PostMapping("/api/signup")
-    public JSONObject signup(@RequestBody UserDTO userDTO) {
-        JSONObject retObject = authService.signup(userDTO);
+    public JSONObject signup(@RequestBody SignupDTO signupDTO) {
+        JSONObject retObject = authService.signup(signupDTO);
+
+        return retObject;
+    }
+
+    @PostMapping("/api/login")
+    public JSONObject login(@RequestBody LoginDTO loginDTO) {
+        JSONObject retObject = authService.login(loginDTO);
 
         return retObject;
     }

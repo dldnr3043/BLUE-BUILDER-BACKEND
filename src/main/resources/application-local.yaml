@@ -35,4 +35,4 @@ spring:
 ##########################################################
 # JWT
 ##########################################################
-jwt.secret: rkGU45258GGhiolLO2465TFY5345kGU45258GGhiolLO2465TFY5345
+jwt.secret: rkGU45258GGhiolLO2465TFY5345kGU45258GGhiolLO2465TFY5345rkGU45258GGhiolLO2465TFY5345kGU45258GGhiolLO2465TFY5345
