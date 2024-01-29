@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class TokenProvider {
     private static final String AUTHORITIES_KEY = "blue/builder/me/auth";
     private static final String BEARER_TYPE = "Bearer";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30;            // 30분
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 1;            // 30분
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;  // 7일
 
     private final Key key;
@@ -68,6 +68,31 @@ public class TokenProvider {
                 .build();
     }
 
+    public String createRefreshToken() {
+        long now = (new Date()).getTime();
+        Date refreshTokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
+        return Jwts.builder()
+                .signWith(key, SignatureAlgorithm.HS512)
+                .setExpiration(refreshTokenExpiresIn)
+                .compact();
+    }
+
+    public String recreateAccessToken(String oldAccessToken) {
+        Authentication authentication = getAuthentication(oldAccessToken);
+        String authorities = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+        long now = (new Date()).getTime();
+        Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
+
+        return Jwts.builder()
+                .setSubject(authentication.getName())       // payload "sub": "name"
+                .claim(AUTHORITIES_KEY, authorities)        // payload "auth": "ROLE_USER"
+                .setExpiration(accessTokenExpiresIn)        // payload "exp": 151621022 (ex)
+                .signWith(key, SignatureAlgorithm.HS512)    // header "alg": "HS512"
+                .compact();
+    }
+
     /**
      * accessToken 복호화하여 정보 추출
      * @param accessToken
@@ -93,23 +118,26 @@ public class TokenProvider {
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
 
-    public boolean validateToken(String token) {
+    public int validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
+            return JwtResponseEnum.CORRECT_TOKEN.getCode();
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("잘못된 JWT 서명입니다.");
+            return JwtResponseEnum.INVALID_SIGNATURE.getCode();
         } catch (ExpiredJwtException e) {
-            log.info("만료된 JWT 토큰입니다.");
+            return JwtResponseEnum.EXPIRED_TOKEN.getCode();
         } catch (UnsupportedJwtException e) {
-            log.info("지원되지 않는 JWT 토큰입니다.");
+            return JwtResponseEnum.UNSUPPORTED_TOKEN.getCode();
         } catch (IllegalArgumentException e) {
-            log.info("JWT 토큰이 잘못되었습니다.");
+            return JwtResponseEnum.WRONG_TOKEN.getCode();
         }
-        return false;
     }
 
-    private Claims parseClaims(String accessToken) {
+    public long getAccessTokenExpirationTime() {
+        return ACCESS_TOKEN_EXPIRE_TIME;
+    }
+
+    public Claims parseClaims(String accessToken) {
         try {
             return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
         } catch (ExpiredJwtException e) {

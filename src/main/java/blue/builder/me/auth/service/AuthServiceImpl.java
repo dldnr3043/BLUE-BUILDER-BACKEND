@@ -11,10 +11,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -67,6 +67,7 @@ public class AuthServiceImpl implements AuthService {
         // 2. 실제로 검증 (사용자 비밀번호 체크) 이 이루어지는 부분
         //    authenticate 메서드가 실행이 될 때 CustomUserDetailsService 에서 만들었던 loadUserByUsername 메서드가 실행됨
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // 3. 인증 정보를 기반으로 JWT 토큰 생성
         TokenDTO tokenDTO = tokenProvider.generateToken(authentication);
@@ -90,10 +91,10 @@ public class AuthServiceImpl implements AuthService {
         String refreshTokenKeyExpirationTime = loginDTO.getEmail() + ":" + "refreshTokenExpirationTime";
 
         // 2. 기존 token info 삭제
-        if(Boolean.TRUE.equals(redisTemplate.hasKey(accessTokenKey))) redisTemplate.opsForHash().delete(accessTokenKey);
-        if(Boolean.TRUE.equals(redisTemplate.hasKey(accessTokenKeyExpirationTime))) redisTemplate.opsForHash().delete(accessTokenKeyExpirationTime);
-        if(Boolean.TRUE.equals(redisTemplate.hasKey(refreshTokenKey))) redisTemplate.opsForHash().delete(refreshTokenKey);
-        if(Boolean.TRUE.equals(redisTemplate.hasKey(refreshTokenKeyExpirationTime))) redisTemplate.opsForHash().delete(refreshTokenKeyExpirationTime);
+        if(Boolean.TRUE.equals(redisTemplate.hasKey(accessTokenKey))) redisTemplate.delete(accessTokenKey);
+        if(Boolean.TRUE.equals(redisTemplate.hasKey(accessTokenKeyExpirationTime))) redisTemplate.delete(accessTokenKeyExpirationTime);
+        if(Boolean.TRUE.equals(redisTemplate.hasKey(refreshTokenKey))) redisTemplate.delete(refreshTokenKey);
+        if(Boolean.TRUE.equals(redisTemplate.hasKey(refreshTokenKeyExpirationTime))) redisTemplate.delete(refreshTokenKeyExpirationTime);
 
         // 3. token info 저장
         redisTemplate.opsForValue().set(accessTokenKey, tokenDTO.getAccessToken());
