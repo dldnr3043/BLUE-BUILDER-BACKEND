@@ -1,10 +1,8 @@
 package blue.builder.me.auth.service;
 
-import blue.builder.me.auth.domain.RefreshToken;
 import blue.builder.me.auth.dto.LoginDTO;
 import blue.builder.me.auth.dto.SignupDTO;
 import blue.builder.me.auth.dto.TokenDTO;
-import blue.builder.me.auth.repository.RefreshTokenRepository;
 import blue.builder.me.auth.util.TokenProvider;
 import blue.builder.me.user.domain.User;
 import blue.builder.me.user.dto.UserDTO;
@@ -12,13 +10,13 @@ import blue.builder.me.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import javax.swing.plaf.TreeUI;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +25,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RedisTemplate<String, String> redisTemplate;
 
 
     @Override
@@ -73,13 +71,9 @@ public class AuthServiceImpl implements AuthService {
         // 3. 인증 정보를 기반으로 JWT 토큰 생성
         TokenDTO tokenDTO = tokenProvider.generateToken(authentication);
 
-        // 4-1. 기존에 있던 token(access, refresh) 삭제
-        // 4-2. token(access, refresh) 저장 to redis
-        RefreshToken refreshToken = RefreshToken.builder()
-                .key(authentication.getName())
-                .value(tokenDTO.getRefreshToken())
-                .build();
-        refreshTokenRepository.save(refreshToken);
+        // 4-1. 기존에 있던 token info 삭제
+        // 4-2. token info 저장 to redis
+        setTokenInfoRedis(loginDTO, tokenDTO);
 
         // 5. 토큰 발급
         retObject.put("ERROR_FLAG", false);
@@ -87,4 +81,25 @@ public class AuthServiceImpl implements AuthService {
         retObject.put("DATA", tokenDTO);
         return retObject;
     }
+
+    private void setTokenInfoRedis(LoginDTO loginDTO, TokenDTO tokenDTO) {
+        // 1. 파라메터 세팅
+        String accessTokenKey = loginDTO.getEmail() + ":" + "accessToken";
+        String accessTokenKeyExpirationTime = loginDTO.getEmail() + ":" + "accessTokenExpirationTime";
+        String refreshTokenKey = loginDTO.getEmail() + ":" + "refreshToken";
+        String refreshTokenKeyExpirationTime = loginDTO.getEmail() + ":" + "refreshTokenExpirationTime";
+
+        // 2. 기존 token info 삭제
+        if(Boolean.TRUE.equals(redisTemplate.hasKey(accessTokenKey))) redisTemplate.opsForHash().delete(accessTokenKey);
+        if(Boolean.TRUE.equals(redisTemplate.hasKey(accessTokenKeyExpirationTime))) redisTemplate.opsForHash().delete(accessTokenKeyExpirationTime);
+        if(Boolean.TRUE.equals(redisTemplate.hasKey(refreshTokenKey))) redisTemplate.opsForHash().delete(refreshTokenKey);
+        if(Boolean.TRUE.equals(redisTemplate.hasKey(refreshTokenKeyExpirationTime))) redisTemplate.opsForHash().delete(refreshTokenKeyExpirationTime);
+
+        // 3. token info 저장
+        redisTemplate.opsForValue().set(accessTokenKey, tokenDTO.getAccessToken());
+        redisTemplate.opsForValue().set(accessTokenKeyExpirationTime, Long.toString(tokenDTO.getAccessTokenExpirationTime()));
+        redisTemplate.opsForValue().set(refreshTokenKey, tokenDTO.getRefreshToken());
+        redisTemplate.opsForValue().set(refreshTokenKeyExpirationTime, Long.toString(tokenDTO.getRefreshTokenExpirationTime()));
+    }
+
 }

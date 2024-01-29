@@ -21,16 +21,18 @@ spring:
       hibernate:
         format_sql: true
     show-sql: true
+##########################################################
+# REDIS
+##########################################################
+  cache.type: redis
+  redis:
+    host: localhost
+    port: 6379
+    lettuce:
+      max-active: 10
+      max-idle: 10
+      min-idle: 2
 
-
-  ##########################################################
-  # REDIS
-  ##########################################################
-  spring:
-    cache.type: redis
-    redis:
-      host: localhost
-      port: 6379
 
 ##########################################################
 # JWT
