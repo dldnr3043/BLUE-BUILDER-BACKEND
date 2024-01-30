@@ -34,4 +34,12 @@ public class AuthRestController {
 
         return retObject;
     }
+
+    @PostMapping("/api/auth/token/reissue")
+    public JSONObject reissueToken(@RequestBody JSONObject params) {
+        JSONObject retObject = authService.reissueToken(params);
+
+        return retObject;
+    }
+
 }

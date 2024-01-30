@@ -7,7 +7,6 @@ import blue.builder.me.auth.util.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -27,7 +26,6 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SpringSecurity {
     private final TokenProvider tokenProvider;
-    private final RedisTemplate<String, String> redisTemplate;
 
     @Bean
     PasswordEncoder passwordEncoder() {
@@ -41,13 +39,14 @@ public class SpringSecurity {
                 .authorizeHttpRequests(a -> a
                         .requestMatchers("/api/login").permitAll()
                         .requestMatchers("/api/signup").permitAll()
+                        .requestMatchers("/api/auth/token/reissue").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(s -> s
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(h -> h
                         .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
                         .accessDeniedHandler(new JwtAccessDeniedHandler()))
-                .addFilterBefore(new JwtFilter(redisTemplate, tokenProvider), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

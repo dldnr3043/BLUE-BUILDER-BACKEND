@@ -9,6 +9,7 @@ import blue.builder.me.user.dto.UserDTO;
 import blue.builder.me.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.antlr.v4.runtime.Token;
 import org.json.simple.JSONObject;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -74,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 4-1. 기존에 있던 token info 삭제
         // 4-2. token info 저장 to redis
-        setTokenInfoRedis(loginDTO, tokenDTO);
+        setTokenInfoRedis(loginDTO.getEmail(), tokenDTO);
 
         // 5. 토큰 발급
         retObject.put("ERROR_FLAG", false);
@@ -83,24 +84,53 @@ public class AuthServiceImpl implements AuthService {
         return retObject;
     }
 
-    private void setTokenInfoRedis(LoginDTO loginDTO, TokenDTO tokenDTO) {
+    /**
+     * old access token으로 new token info 발급
+     * @param params
+     * @return
+     */
+    @Override
+    public JSONObject reissueToken(JSONObject params) {
         // 1. 파라메터 세팅
-        String accessTokenKey = loginDTO.getEmail() + ":" + "accessToken";
-        String accessTokenKeyExpirationTime = loginDTO.getEmail() + ":" + "accessTokenExpirationTime";
-        String refreshTokenKey = loginDTO.getEmail() + ":" + "refreshToken";
-        String refreshTokenKeyExpirationTime = loginDTO.getEmail() + ":" + "refreshTokenExpirationTime";
+        JSONObject retObject = new JSONObject();
+        String accessToken = params.get("accessToken").toString();
+        String refreshToken = params.get("refreshToken").toString();
+        Authentication authentication = tokenProvider.getAuthentication(accessToken);
+        String refreshTokenRedis = redisTemplate.opsForValue().get(authentication.getName() + ":refreshToken");
+
+        // 2. refresh token 검증
+        assert refreshTokenRedis != null;
+        if(refreshTokenRedis.equals(refreshToken)) {
+            // 3. 토큰 정보 재발급
+            TokenDTO tokenDTO = tokenProvider.generateToken(authentication);
+
+            // 4. refresh token redis에 새로 저장
+            setTokenInfoRedis(authentication.getName(), tokenDTO);
+
+            // 5. 결과값 세팅
+            retObject.put("ERROR_FLAG", false);
+            retObject.put("ERROR_MSG", "");
+            retObject.put("DATA", tokenDTO);
+        }
+        else {
+            String refreshTokenKey = authentication.getName() + ":refreshToken";
+            if(Boolean.TRUE.equals(redisTemplate.hasKey(refreshTokenKey))) redisTemplate.delete(refreshTokenKey);
+            retObject.put("ERROR_FLAG", true);
+            retObject.put("ERROR_MSG", "");
+        }
+
+        return retObject;
+    }
+
+    private void setTokenInfoRedis(String id, TokenDTO tokenDTO) {
+        // 1. 파라메터 세팅
+        String refreshTokenKey = id + ":" + "refreshToken";
 
         // 2. 기존 token info 삭제
-        if(Boolean.TRUE.equals(redisTemplate.hasKey(accessTokenKey))) redisTemplate.delete(accessTokenKey);
-        if(Boolean.TRUE.equals(redisTemplate.hasKey(accessTokenKeyExpirationTime))) redisTemplate.delete(accessTokenKeyExpirationTime);
         if(Boolean.TRUE.equals(redisTemplate.hasKey(refreshTokenKey))) redisTemplate.delete(refreshTokenKey);
-        if(Boolean.TRUE.equals(redisTemplate.hasKey(refreshTokenKeyExpirationTime))) redisTemplate.delete(refreshTokenKeyExpirationTime);
 
         // 3. token info 저장
-        redisTemplate.opsForValue().set(accessTokenKey, tokenDTO.getAccessToken());
-        redisTemplate.opsForValue().set(accessTokenKeyExpirationTime, Long.toString(tokenDTO.getAccessTokenExpirationTime()));
         redisTemplate.opsForValue().set(refreshTokenKey, tokenDTO.getRefreshToken());
-        redisTemplate.opsForValue().set(refreshTokenKeyExpirationTime, Long.toString(tokenDTO.getRefreshTokenExpirationTime()));
     }
 
 }
