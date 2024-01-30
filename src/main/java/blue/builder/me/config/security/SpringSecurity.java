@@ -38,6 +38,7 @@ public class SpringSecurity {
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(a -> a
                         .requestMatchers("/api/login").permitAll()
+                        .requestMatchers("/api/logout").permitAll()
                         .requestMatchers("/api/signup").permitAll()
                         .requestMatchers("/api/auth/token/reissue").permitAll()
                         .anyRequest().authenticated())

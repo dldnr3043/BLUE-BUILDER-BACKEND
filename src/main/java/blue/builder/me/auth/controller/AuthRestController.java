@@ -1,6 +1,7 @@
 package blue.builder.me.auth.controller;
 
 import blue.builder.me.auth.dto.LoginDTO;
+import blue.builder.me.auth.dto.LogoutDTO;
 import blue.builder.me.auth.dto.SignupDTO;
 import blue.builder.me.auth.dto.TokenDTO;
 import blue.builder.me.auth.service.AuthService;
@@ -38,6 +39,13 @@ public class AuthRestController {
     @PostMapping("/api/auth/token/reissue")
     public JSONObject reissueToken(@RequestBody JSONObject params) {
         JSONObject retObject = authService.reissueToken(params);
+
+        return retObject;
+    }
+
+    @PostMapping("/api/logout")
+    public JSONObject logout(@RequestBody LogoutDTO logoutDTO) {
+        JSONObject retObject = authService.logout(logoutDTO);
 
         return retObject;
     }

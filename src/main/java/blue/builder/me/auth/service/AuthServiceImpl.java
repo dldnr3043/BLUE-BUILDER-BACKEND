@@ -1,6 +1,7 @@
 package blue.builder.me.auth.service;
 
 import blue.builder.me.auth.dto.LoginDTO;
+import blue.builder.me.auth.dto.LogoutDTO;
 import blue.builder.me.auth.dto.SignupDTO;
 import blue.builder.me.auth.dto.TokenDTO;
 import blue.builder.me.auth.util.TokenProvider;
@@ -117,6 +118,29 @@ public class AuthServiceImpl implements AuthService {
             if(Boolean.TRUE.equals(redisTemplate.hasKey(refreshTokenKey))) redisTemplate.delete(refreshTokenKey);
             retObject.put("ERROR_FLAG", true);
             retObject.put("ERROR_MSG", "");
+        }
+
+        return retObject;
+    }
+
+    @Override
+    public JSONObject logout(LogoutDTO logoutDTO) {
+        JSONObject retObject = new JSONObject();
+
+        try {
+            // 1. redis refresh token 삭제
+            redisTemplate.delete(logoutDTO.getEmail() + ":refreshToken");
+
+            // 2. 세션 정보 삭제
+            SecurityContextHolder.getContext().setAuthentication(null);
+
+            // 3. 결과 값 세팅
+            retObject.put("ERROR_FLAG", false);
+            retObject.put("ERROR_MSG", "");
+        }
+        catch(Exception e) {
+            retObject.put("ERROR_FLAG", true);
+            retObject.put("ERROR_MSG", "세션정보 삭제 실패");
         }
 
         return retObject;
