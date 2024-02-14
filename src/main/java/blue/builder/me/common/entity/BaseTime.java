@@ -1,4 +1,4 @@
-package blue.builder.me.common.domain;
+package blue.builder.me.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

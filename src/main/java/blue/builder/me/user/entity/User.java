@@ -1,7 +1,7 @@
-package blue.builder.me.user.domain;
+package blue.builder.me.user.entity;
 
-import blue.builder.me.common.domain.BaseTime;
-import blue.builder.me.user.util.UserRole;
+import blue.builder.me.common.entity.BaseTime;
+import blue.builder.me.user.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 

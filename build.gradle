@@ -18,8 +18,6 @@ configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
-
-//	querydsl.extends_annotations = configurations.annotationProcessor
 }
 
 repositories {
@@ -49,11 +47,14 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.2'
 
 	// query dsl
-	implementation 'com.querydsl:querydsl-jpa:5.0.0'
-	implementation 'com.querydsl:querydsl-apt:5.0.0'
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+	annotationProcessor('com.querydsl:querydsl-apt:5.0.0:jakarta')
+	annotationProcessor('jakarta.persistence:jakarta.persistence-api')
+	annotationProcessor('jakarta.annotation:jakarta.annotation-api')
 }
 
-def querydslDir = "$buildDir/generated/querydsl"
+// query dsl 추가 시작
+def querydslDir = 'src/main/generated'
 
 querydsl {
 	jpa = true
@@ -62,16 +63,13 @@ querydsl {
 sourceSets {
 	main.java.srcDir querydslDir
 }
-compileQuerydsl{
+configurations {
+	querydsl.extendsFrom compileClasspath
+}
+compileQuerydsl {
 	options.annotationProcessorPath = configurations.querydsl
 }
-tasks.withType(JavaCompile) {
-	options.encoding = 'UTF-8'
-}
-
-sourceSets {
-	main.java.srcDir querydslDir
-}
+// query dsl 추가 끝
 
 
 tasks.named('test') {

@@ -1,6 +1,6 @@
 package blue.builder.me.channel.repository;
 
-import blue.builder.me.channel.domain.Channel;
+import blue.builder.me.channel.entity.Channel;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

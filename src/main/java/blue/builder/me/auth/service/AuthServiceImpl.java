@@ -5,7 +5,7 @@ import blue.builder.me.auth.dto.LogoutDTO;
 import blue.builder.me.auth.dto.SignupDTO;
 import blue.builder.me.auth.dto.TokenDTO;
 import blue.builder.me.auth.util.TokenProvider;
-import blue.builder.me.user.domain.User;
+import blue.builder.me.user.entity.User;
 import blue.builder.me.user.dto.UserDTO;
 import blue.builder.me.user.repository.UserRepository;
 import jakarta.transaction.Transactional;

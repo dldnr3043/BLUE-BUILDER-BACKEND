@@ -1,6 +1,6 @@
 package blue.builder.me.auth.service;
 
-import blue.builder.me.user.domain.User;
+import blue.builder.me.user.entity.User;
 import blue.builder.me.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

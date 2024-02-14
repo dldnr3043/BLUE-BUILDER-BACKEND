@@ -1,6 +1,6 @@
-package blue.builder.me.bot.domain;
+package blue.builder.me.bot.entity;
 
-import blue.builder.me.common.domain.BaseTime;
+import blue.builder.me.common.entity.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

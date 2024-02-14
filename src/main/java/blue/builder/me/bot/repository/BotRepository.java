@@ -1,6 +1,6 @@
 package blue.builder.me.bot.repository;
 
-import blue.builder.me.bot.domain.Bot;
+import blue.builder.me.bot.entity.Bot;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -10,5 +10,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * count()
  * delete()
  */
-public interface BotRepository extends JpaRepository<Bot, String> {
+public interface BotRepository extends JpaRepository<Bot, String>, BotListRepository {
 }
