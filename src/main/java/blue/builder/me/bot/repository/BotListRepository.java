@@ -6,5 +6,5 @@ import com.querydsl.core.Tuple;
 import java.util.List;
 
 public interface BotListRepository {
-    List<BotListDTO> findBotListByUserId(String email);
+    List<Tuple> findBotListByUserId(String email);
 }
