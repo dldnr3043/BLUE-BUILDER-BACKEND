@@ -14,11 +14,13 @@ import lombok.NoArgsConstructor;
 @Table(name = "bot_owner", schema = "public")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BotOwner extends BaseTime  {
-    @Id
+    @EmbeddedId
+    BotOwnerId botOwnerId;
+    @MapsId("email")
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name="email", referencedColumnName = "email")
     User user;
-    @Id
+    @MapsId("botId")
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name="bot_id", referencedColumnName = "bot_id")
     Bot bot;
@@ -28,6 +30,7 @@ public class BotOwner extends BaseTime  {
 
     @Builder
     public BotOwner(User user, Bot bot, BotOwnerAuth auth) {
+        this.botOwnerId = new BotOwnerId(bot.getBotId(), user.getEmail());
         this.user = user;
         this.bot = bot;
         this.auth = auth;

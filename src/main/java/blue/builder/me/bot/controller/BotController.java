@@ -1,7 +1,7 @@
 package blue.builder.me.bot.controller;
 
-import blue.builder.me.auth.dto.SignupDTO;
 import blue.builder.me.bot.dto.BotListDTO;
+import blue.builder.me.bot.enums.BotOwnerAuth;
 import blue.builder.me.bot.service.BotService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,4 +28,18 @@ public class BotController {
 
         return retObject;
     }
+
+    @PostMapping("/api/bot/insert")
+    public JSONObject insertBot(@RequestBody JSONObject reqObject) {
+        String email = reqObject.get("email").toString();
+        String botName = reqObject.get("botName").toString();
+        BotOwnerAuth auth = reqObject.get("auth").toString().equals("MASTER") ? BotOwnerAuth.MASTER : BotOwnerAuth.NORMAL;
+
+        JSONObject retObject = new JSONObject();
+
+        retObject = botService.insertBot(botName, email, auth);
+
+        return retObject;
+    }
+
 }

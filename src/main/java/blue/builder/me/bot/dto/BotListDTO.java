@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BotListDTO {
-    private String botId;
+    private Long botId;
     private String botName;
     private String messenger;
     private String channelId;
@@ -17,7 +17,7 @@ public class BotListDTO {
     private BotOwnerAuth auth;
 
     @Builder
-    public BotListDTO(String botId, String botName, String messenger, String channelId, String channelName, BotOwnerAuth auth) {
+    public BotListDTO(Long botId, String botName, String messenger, String channelId, String channelName, BotOwnerAuth auth) {
         this.botId = botId;
         this.botName = botName;
         this.messenger = messenger;
